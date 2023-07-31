@@ -10,10 +10,12 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+// var url = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_hour.geojson"
 
+// need a function to calculate the color of any given earthquake
 function getColor(depth) {
-// variables to help with modifying color
 
+// variables to help with modifying color
 var minDepth = 0;
 var maxDepth = 100; //100 seems to scale well  for hourly data
 
@@ -24,10 +26,11 @@ var r = Math.floor((1 - percentage) * 255);
 var g = Math.floor(percentage * 255);
 var b = 0;
 
-// 
+// generate and return the rgb color
 return "rgb(" + r + "," + g + "," + b + ")";
 }
 
+// converts unix time to noraml time
 function formatTime(timestamp) {
     var date = new Date(timestamp);
     return new Intl.DateTimeFormat('en-US', {
@@ -38,6 +41,7 @@ function formatTime(timestamp) {
     }).format(date);
 }
 
+// create legend and calculate the color for the values used for the legend
 function createLegend() {
     var legend = L.control({ position: 'bottomright' });
 
@@ -62,17 +66,17 @@ legend.onAdd = function(map) {
     return legend;
 }
 
+// add legend to map
 var legend = createLegend();
 legend.addTo(map);
 
 // create a loop for the data using D3
 d3.json(url).then(function(response) {
-console.log(response);
-
+    
+    // create a loop to iterate through all eathrquakes to create the circles, the size, the color and the popup information
     for (var i = 0; i < response.features.length; i++) {
     var coordinates = response.features[i].geometry.coordinates;
     var magni = response.features[i].properties.mag;
-
     var time = response.features[i].properties.time
     var depth = response.features[i].geometry.coordinates[2];
     var color = getColor(depth)
